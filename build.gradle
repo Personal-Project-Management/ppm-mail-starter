@@ -1,0 +1,93 @@
+import java.text.SimpleDateFormat
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.springframework.boot' version '3.5.14'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+def buildVersion = "mail-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}-SNAPSHOT"
+
+def envFile = rootProject.file(".env")
+
+if(envFile.exists()) {
+    envFile.eachLine {line -> {
+        if(line.contains("=")) {
+            def lineValue = line.split("=", 2)
+            System.setProperty(lineValue[0].trim(), lineValue[1].trim())
+        }
+    }}
+}
+
+def GITHUB_USERNAME=System.getProperty("GITHUB_USERNAME")
+def GITHUB_PASSWORD=System.getProperty("GITHUB_PASSWORD")
+
+group = 'com.ppm'
+version = buildVersion
+description = 'mail-starter'
+
+print "Build version ${buildVersion}"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api 'org.springframework.boot:spring-boot-autoconfigure'
+    api 'org.springframework.boot:spring-boot-starter-mail'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testCompileOnly 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            groupId="com.ppm"
+            artifactId="mail-starter"
+            version=buildVersion
+
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name="GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Jamies-Tran/PPM-Mail-Starter")
+            credentials {
+                username = GITHUB_USERNAME
+                password = GITHUB_PASSWORD
+            }
+        }
+    }
+}
