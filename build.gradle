@@ -83,7 +83,7 @@ publishing {
     repositories {
         maven {
             name="GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Jamies-Tran/PPM-Mail-Starter")
+            url = uri("https://maven.pkg.github.com/Personal-Project-Management/ppm-mail-starter")
             credentials {
                 username = GITHUB_USERNAME
                 password = GITHUB_PASSWORD
